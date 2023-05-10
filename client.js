@@ -1,16 +1,9 @@
-const getTemplate = user => `
+const getTemplate = count => `
 <div class="card">
     <div class="row">
-        <div class="col-md-4">
-            <img src="${user.img}" class="card-img" alt="user-photo">
-        </div>
         <div class="col-md-8">
             <div class="card-body">
-                <h5 class="card-title">${user.id !== null ? `Id: ${user.id}` : `User hasn't id`}</h5>
-                <p class="card-text">Name: ${user.name}</p>
-                <p class="card-text">Username: ${user.username}</p>
-                <p class="card-text">Email: ${user.email}</p>
-                <p class="card-text">Age: ${user.age}</p>
+                <h5 class="card-title">${`Id: ${count}`}</h5>
             </div>
         </div>
     </div>
@@ -59,45 +52,20 @@ class App {
 
     startEvents() {
         this.eventSource = new EventSource('http://localhost:3000/getUsers')
-        this.eventLog.textContent = 'Accepting data from the server.'
+        this.eventLog.textContent = 'Соединение установлено.'
 
         this.eventSource.addEventListener('message', e => {
             if (e.lastEventId === '-1') {
                 this.eventSource.close()
-                this.eventLog.textContent = 'End of stream from the server.'
+                this.eventLog.textContent = 'Соединение закрыто сервером.'
 
-                this.changeDisabled()
+                this.startEvents()
             }
         }, {once: true})
 
-        this.eventSource.addEventListener('randomUser', (e) => {
-            const userData = JSON.parse(e.data)
-
-            const {
-                id,
-                name,
-                login,
-                email,
-                dob,
-                picture
-            } = userData
-
-            const i = id.value
-            const fullName = `${name.first} ${name.last}`
-            const username = login.username
-            const age = dob.age
-            const img = picture.large
-
-            const user = {
-                id: i,
-                name: fullName,
-                username,
-                email,
-                age,
-                img
-            }
-
-            const template = getTemplate(user)
+        this.eventSource.addEventListener('count', (e) => {
+            const { count } = JSON.parse(e.data)
+            const template = getTemplate(count)
 
             this.$.insertAdjacentHTML('beforeend', template)
         })
@@ -113,8 +81,8 @@ class App {
 
     stopEvents() {
         this.eventSource.close()
-        this.eventLog.textContent = 'Event stream closed by client.'
+        this.eventLog.textContent = 'Соединение закрыто клиентом.'
     }
 }
 
-const app = new App('main')
+let app = new App('main')
