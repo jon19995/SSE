@@ -48,7 +48,6 @@ const sendUserData = (req, res) => {
     // обрабатываем закрытие соединения клиентом
     req.on('close', () => {
         clearInterval(timer)
-        i = 1
         res.end()
         console.log('Соединение закрыто')
     })
